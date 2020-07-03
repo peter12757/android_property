@@ -1,3 +1,3 @@
-package com.pptv.base.prop;
+package com.peterxi.propertylib.prop;
 
 parcelable PropValue;

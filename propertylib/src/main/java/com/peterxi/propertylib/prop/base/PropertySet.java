@@ -9,6 +9,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,17 +17,17 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import com.peterxi.propertylib.prop.PropConfigurableKey;
-import com.pptv.base.debug.Dumpable;
-import com.pptv.base.debug.Dumpper;
-import com.pptv.base.debug.Log;
-import com.pptv.base.util.data.Collections;
-import com.pptv.base.util.reflect.ClassWrapper;
+import com.peterxi.propertylib.prop.util.ClassWrapper;
+import com.peterxi.propertylib.prop.util.CollectionsUtil;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
-public class PropertySet implements Parcelable, Externalizable, Dumpable {
+@SuppressLint("ParcelCreator")
+public class PropertySet implements Parcelable, Externalizable {
 
     private static final long serialVersionUID = -370004061720351487L;
     
@@ -473,12 +474,7 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
         return null;
     }
 
-    @Override
-    public String toString() {
-        synchronized (mProps) {
-            return getClass().getSimpleName() + " (size = " + mProps.size() + ")";
-        }
-    }
+
     
     protected String toString(PropKey<String> title) {
         return toString(getProp(title));
@@ -514,7 +510,7 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
         }
         Class<? extends PropertySet> javaClass = 
                 myClass().getJavaClass();
-        ClassWrapper<? extends PropertySet> wrapClass = 
+        ClassWrapper<? extends PropertySet> wrapClass =
                 ClassWrapper.wrap(javaClass);
         if (wrapClass.hasConstructor(javaClass)) {
             return wrapClass.newInstance(this);
@@ -567,38 +563,10 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
     }
 
     @Override
-    public void dump(Dumpper dumpper) {
-        _dump(dumpper);
-    }
-
-    private void _dump(Dumpper dumpper) {
+    public String toString() {
         synchronized (mProps) {
-            if (mSuperSet != null)
-                dumpper.dump("mSuperSet", mSuperSet);
-            dumpProps(dumpper);
+            return getClass().getSimpleName() + " (size = " + mProps.size() + ")";
         }
-    }
-
-    public void dumpProps(Dumpper dumpper) {
-        for (Entry<PropKey<?>, Object> entry : mProps.entrySet()) {
-            PropKey<?> key = entry.getKey();
-            Object value = entry.getValue();
-            String title = String.format("%-16s", key == null ? "<null>" : key.getName());
-            dumpper.dump(title, value);
-        }
-    }
-
-    public void dumpProperties(Dumpper dumpper) {
-        dumpper.dump("Properties", new Dumpable() {
-            @Override
-            public String toString() {
-                return PropertySet.this._toString();
-            }
-            @Override
-            public void dump(Dumpper dumpper) {
-                PropertySet.this._dump(dumpper);
-            }
-        });
     }
 
     @Override
@@ -672,7 +640,7 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
     }
     
     public Collection<PropKey<?>> allMutableKeys() {
-        return Collections.filter(allKeys(), new Collections.Filter<PropKey<?>>() {
+        return CollectionsUtil.filter(allKeys(), new CollectionsUtil.Filter<PropKey<?>>() {
             @Override
             public boolean invoke(PropKey<?> e) {
                 return e instanceof PropMutableKey;
@@ -681,7 +649,7 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
     }
     
     public Collection<PropKey<?>> allConfigurableKeys() {
-        return Collections.filter(allKeys(), new Collections.Filter<PropKey<?>>() {
+        return CollectionsUtil.filter(allKeys(), new CollectionsUtil.Filter<PropKey<?>>() {
             @Override
             public boolean invoke(PropKey<?> e) {
                 return e instanceof PropConfigurableKey;
@@ -700,7 +668,7 @@ public class PropertySet implements Parcelable, Externalizable, Dumpable {
     /**
      * 找到name所对应的值，否则应该返回null
      * 
-     * @param name
+     * @param key
      * @return
      */
     public <E> PropKey<E> findKey(String key, boolean force) {
