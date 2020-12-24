@@ -7,6 +7,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+/**
+ * 属性的Key
+ * @param <E>
+ */
 public class PropKey<E> implements Parcelable, Comparable<PropKey<E>> {
 	
     protected static final String TAG = "PropKey";
